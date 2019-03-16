@@ -66,6 +66,44 @@ class MatchesManager {
         }
         this.drawMatches();
     }
+
+    dragMatchAtPoint = (point = {x, y}) => {
+        let match = this.getMatchContainsPoint(point);
+        this.dragMatch(match);
+    }
+
+    dragMatch = (match) => {
+        if (!match) return;
+        match.dragged = true;
+    }
+
+    dropMatch = () => {
+        let match = this.draggedMatch;
+        if (!match) return;
+        match.dragged = false;
+    }
+
+    get draggedMatch() {
+        return this._matches.filter(m => m.dragged)[0];
+    }
+
+    getMatchContainsPoint = (point = {x, y}) => {
+        let match;
+        for(let index = this._matches.length - 1; index >= 0; index--) {
+            if(this._matches[index].contains(point)) {
+                match = this._matches[index];
+                break;
+            }
+        }
+        return match;
+    }
+}
+
+class CanvasManager {
+    constructor() {
+    }
+
+
 }
 
 const matchesManager = new MatchesManager(context);
@@ -76,13 +114,13 @@ btnAddMatch.addEventListener('click', () => {
 });
 
 mouseUp = (e) => {
-    let matchDragged = matchesManager.matches.filter(m => m.dragged)[0];
-    if(!matchDragged) return;
+    if(!matchesManager.draggedMatch) return;
 
 	canvas.addEventListener("mousedown", mouseDown, false);
     canvas.removeEventListener("mouseup", mouseUp, false);
     canvas.removeEventListener("mousemove", mouseMove, false);
-    matchDragged.dragged = false;
+
+    matchesManager.dropMatch();
 };
 
 mouseDown = (e) => {
@@ -92,35 +130,24 @@ mouseDown = (e) => {
         y: e.clientY - rect.top
     };
 
-    console.log(matchesManager.matches);
+    matchesManager.dragMatchAtPoint(point);
 
-    let matchClicked;
-    for(let index = matchesManager.matches.length - 1; index >= 0; index--) {
-        let isClicked = matchesManager.matches[index].contains(point);
-        console.log(isClicked);
-        if(isClicked) {
-            matchClicked = matchesManager.matches[index];
-            matchClicked.dragged = true;
-            canvas.addEventListener('mousemove', mouseMove, false);
-            canvas.addEventListener("mouseup", mouseUp, false);
-            canvas.removeEventListener('mousedown', mouseDown, false);
-            break;
-        }
-    }    
+    canvas.addEventListener('mousemove', mouseMove, false);
+    canvas.addEventListener("mouseup", mouseUp, false);
+    canvas.removeEventListener('mousedown', mouseDown, false);
 };
 
 mouseMove = (e) => {
-    let matchDragged = matchesManager.matches.filter(m => m.dragged)[0];
-    if(!matchDragged) return;
-
     const rect = canvas.getBoundingClientRect();
     const point = {
         x: e.clientX - rect.left,
         y: e.clientY - rect.top
     };
 
-    matchDragged.x = point.x;
-    matchDragged.y = point.y;
+    if(!matchesManager.draggedMatch) return;
+
+    matchesManager.draggedMatch.x = point.x;
+    matchesManager.draggedMatch.y = point.y;
     context.clearRect(0, 0, canvas.width, canvas.height);
     matchesManager.drawMatches();
 };
