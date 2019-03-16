@@ -45,7 +45,7 @@ addNewMatch = () => {
     for (let i = 0; i < count; i++) {
         const index = matches.length > 0 ? matches.length - 1 : 0;
         const lastMatch = index > -1 ? matches[index] : null;
-        let newMatch = new Match();
+        let newMatch = new Match(offset, offset);
         if(!!lastMatch) {
             newMatch = new Match(lastMatch.x+offset, lastMatch.y+offset);
         }
@@ -66,7 +66,7 @@ canvas.addEventListener('click', (e) => {
     };
 
     let matchClicked;
-    for(let index = matches.length - 1; index > 0; index--) {
+    for(let index = matches.length - 1; index >= 0; index--) {
         let isClicked = matches[index].isClicked(position.x, position.y);
         if(isClicked) {
             matchClicked = matches[index];
