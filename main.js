@@ -1,6 +1,7 @@
 const canvas = document.querySelector('canvas');
 const context = canvas.getContext('2d');
 const btnAddMatch = document.querySelector('#btnAddMatch');
+const btnClear = document.querySelector('#btnClear');
 const numMatchesCount = document.querySelector('#numMatchesCount');
 
 canvas.width = 1000;
@@ -8,14 +9,15 @@ canvas.height = 500;
 
 class Match {
     constructor(x, y) {
-        this.x = x || 0;
-        this.y = y || 0;
+        this.x = x || canvas.width / 2;
+        this.y = y || canvas.height / 2;
         this.width = 10;
         this.height = 150;
         this.dragged = false;
+        this.selected = false;
     }
 
-    draw = (ctx) => {
+    draw(ctx) {
         ctx.fillStyle = "yellow";
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.lineWidth = 1;
@@ -27,14 +29,14 @@ class Match {
         // ctx.rotate(rad);
     }
 
-    contains = (point = { x, y }) => {
+    contains(point = { x, y }) {
         let contains =  point.x >= this.x &&
                         point.x <= this.x + this.width &&
                         point.y >= this.y &&
                         point.y <= this.y + this.height;
         return contains;
     }
-}
+};
 
 class MatchesManager {
     constructor(ctx) {
@@ -46,19 +48,19 @@ class MatchesManager {
         return this._matches;
     }
 
-    drawMatches = () => {
+    drawMatches() {
         this._matches.forEach(match => {
             match.draw(this._ctx);
         });
     }
 
-    addMatch = (count) => {
+    addMatch(count) {
         count = count || 1;
-        const offset = 15;
+        const offset = 5;
         for (let i = 0; i < count; i++) {
             const index = this._matches.length > 0 ? this._matches.length - 1 : 0;
             const lastMatch = index > -1 ? this._matches[index] : null;
-            let newMatch = new Match(offset, offset);
+            let newMatch = new Match();
             if(!!lastMatch) {
                 newMatch = new Match(lastMatch.x+offset, lastMatch.y+offset);
             }
@@ -67,17 +69,28 @@ class MatchesManager {
         this.drawMatches();
     }
 
-    dragMatchAtPoint = (point = {x, y}) => {
+    selectMatchAtPoint(point = {x, y}) {
+        let match = this.getMatchContainsPoint(point);
+        this.selectMatch(match);
+    }
+
+    selectMatch(match) {
+        if (!match) return;
+        this._matches.forEach(m => m.selected = false);
+        match.selected = true;
+    }
+
+    dragMatchAtPoint(point = {x, y}) {
         let match = this.getMatchContainsPoint(point);
         this.dragMatch(match);
     }
 
-    dragMatch = (match) => {
+    dragMatch(match) {
         if (!match) return;
         match.dragged = true;
     }
 
-    dropMatch = () => {
+    dropMatch() {
         let match = this.draggedMatch;
         if (!match) return;
         match.dragged = false;
@@ -87,7 +100,16 @@ class MatchesManager {
         return this._matches.filter(m => m.dragged)[0];
     }
 
-    getMatchContainsPoint = (point = {x, y}) => {
+    get selectedMatch() {
+        return this._matches.filter(m => m.selected)[0];
+    }
+
+    clearMatches() {
+        this._matches = [];
+        this._ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    getMatchContainsPoint(point = {x, y}) {
         let match;
         for(let index = this._matches.length - 1; index >= 0; index--) {
             if(this._matches[index].contains(point)) {
@@ -97,22 +119,17 @@ class MatchesManager {
         }
         return match;
     }
-}
-
-class CanvasManager {
-    constructor() {
-    }
-
-
-}
+};
 
 const matchesManager = new MatchesManager(context);
 
 btnAddMatch.addEventListener('click', () => {
     const count = numMatchesCount.value || 1;
     matchesManager.addMatch(count);
-    canvas.removeEventListener("mousedown", mouseDown, false);
-    canvas.addEventListener("mousedown", mouseDown, false);
+});
+
+btnClear.addEventListener('click', () => {
+    matchesManager.clearMatches();
 });
 
 mouseUp = (e) => {
@@ -131,7 +148,8 @@ mouseDown = (e) => {
         y: e.clientY - rect.top
     };
 
-    matchesManager.dragMatchAtPoint(point);
+    matchesManager.selectMatchAtPoint(point);
+    matchesManager.dragMatchAtPoint(point);    
 
     canvas.addEventListener('mousemove', mouseMove, false);
     canvas.addEventListener("mouseup", mouseUp, false);
@@ -153,4 +171,19 @@ mouseMove = (e) => {
     matchesManager.drawMatches();
 };
 
+keyDown = (e) => {
+    switch(e.keyCode) {
+        case 82:
+            // context.rotate(20 * Math.PI / 180);
+            // matchesManager.drawMatches();
+            if(matchesManager.selectMatch) {
+                //matchesManager.selectMatch.x
+            }
+            break;
+        default:
+            break;
+    }
+};
+
 canvas.addEventListener('mousedown', mouseDown, false);
+window.addEventListener("keydown", keyDown, false);
