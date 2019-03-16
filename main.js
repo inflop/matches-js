@@ -59,7 +59,17 @@ btnAddMatch.addEventListener('click', () => {
     drawMatches();
 });
 
-canvas.addEventListener('click', (e) => {
+mouseUp = (e) => {
+    let matchDragged = matches.filter(m => m.dragged)[0];
+    if(!matchDragged) return;
+
+	canvas.addEventListener("mousedown", mouseDown, false);
+    canvas.removeEventListener("mouseup", mouseUp, false);
+    matchDragged.dragged = false;
+	canvas.removeEventListener("mousemove", mouseMove, false);
+};
+
+mouseDown = (e) => {
     const rect = canvas.getBoundingClientRect();
     const position = {
         x: e.clientX - rect.left,
@@ -72,9 +82,28 @@ canvas.addEventListener('click', (e) => {
         if(isClicked) {
             matchClicked = matches[index];
             matchClicked.dragged = true;
+            canvas.addEventListener('mousemove', mouseMove, false);
+            canvas.addEventListener("mouseup", mouseUp, false);
             break;
         }
     }
+    canvas.removeEventListener('mousedown', mouseDown, false);
+};
 
-    console.log({ matchClicked: matchClicked });
-  });
+mouseMove = (e) => {
+    let matchDragged = matches.filter(m => m.dragged)[0];
+    if(!matchDragged) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const position = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+
+    matchDragged.x = position.x;
+    matchDragged.y = position.y;
+    context.clearRect(0,0,canvas.width, canvas.height);
+    drawMatches();
+};
+
+canvas.addEventListener('mousedown', mouseDown, false);
