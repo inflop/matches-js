@@ -111,15 +111,16 @@ const matchesManager = new MatchesManager(context);
 btnAddMatch.addEventListener('click', () => {
     const count = numMatchesCount.value || 1;
     matchesManager.addMatch(count);
+    canvas.removeEventListener("mousedown", mouseDown, false);
+    canvas.addEventListener("mousedown", mouseDown, false);
 });
 
 mouseUp = (e) => {
-    if(!matchesManager.draggedMatch) return;
-
 	canvas.addEventListener("mousedown", mouseDown, false);
     canvas.removeEventListener("mouseup", mouseUp, false);
     canvas.removeEventListener("mousemove", mouseMove, false);
 
+    if(!matchesManager.draggedMatch) return;
     matchesManager.dropMatch();
 };
 
