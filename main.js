@@ -23,6 +23,7 @@ class Match {
         this.y = y || 0;
         this.width = 10;
         this.height = 150;
+        this.dragged = false;
     }
 
     draw = () => {
@@ -70,6 +71,7 @@ canvas.addEventListener('click', (e) => {
         let isClicked = matches[index].isClicked(position.x, position.y);
         if(isClicked) {
             matchClicked = matches[index];
+            matchClicked.dragged = true;
             break;
         }
     }
