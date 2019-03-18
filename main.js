@@ -15,6 +15,7 @@ class Match {
         this.height = 150;
         this.dragged = false;
         this.selected = false;
+        this.dragOffset = { x: 0, y: 0};
     }
 
     draw(ctx) {
@@ -82,6 +83,10 @@ class MatchesManager {
 
     dragMatchAtPoint(point = {x, y}) {
         let match = this.getMatchContainsPoint(point);
+        match.dragOffset = {
+            x: x-match.x,
+            y: y-match.y,
+        };
         this.dragMatch(match);
     }
 
@@ -93,6 +98,7 @@ class MatchesManager {
     dropMatch() {
         let match = this.draggedMatch;
         if (!match) return;
+        match.dragPoint = { x: 0, y: 0 };
         match.dragged = false;
     }
 
@@ -165,8 +171,8 @@ mouseMove = (e) => {
 
     if(!matchesManager.draggedMatch) return;
 
-    matchesManager.draggedMatch.x = point.x;
-    matchesManager.draggedMatch.y = point.y;
+    matchesManager.draggedMatch.x = point.x-matchesManager.draggedMatch.dragOffset.x;
+    matchesManager.draggedMatch.y = point.y-matchesManager.draggedMatch.dragOffset.y;
     context.clearRect(0, 0, canvas.width, canvas.height);
     matchesManager.drawMatches();
 };
@@ -176,7 +182,7 @@ keyDown = (e) => {
         case 82:
             // context.rotate(20 * Math.PI / 180);
             // matchesManager.drawMatches();
-            if(matchesManager.selectMatch) {
+            if(matchesManager.selectedMatch) {
                 //matchesManager.selectMatch.x
             }
             break;
