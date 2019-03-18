@@ -98,7 +98,7 @@ class MatchesManager {
     dropMatch() {
         let match = this.draggedMatch;
         if (!match) return;
-        match.dragPoint = { x: 0, y: 0 };
+        match.dragOffset = { x: 0, y: 0 };
         match.dragged = false;
     }
 
@@ -180,8 +180,8 @@ mouseMove = (e) => {
 keyDown = (e) => {
     switch(e.keyCode) {
         case 82:
-            // context.rotate(20 * Math.PI / 180);
-            // matchesManager.drawMatches();
+            context.rotate(4 * Math.PI / 180);
+            matchesManager.drawMatches();
             if(matchesManager.selectedMatch) {
                 //matchesManager.selectMatch.x
             }
