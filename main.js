@@ -84,8 +84,8 @@ class MatchesManager {
     dragMatchAtPoint(point = {x, y}) {
         let match = this.getMatchContainsPoint(point);
         match.dragOffset = {
-            x: x-match.x,
-            y: y-match.y,
+            x: point.x-match.x,
+            y: point.y-match.y,
         };
         this.dragMatch(match);
     }
