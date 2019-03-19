@@ -30,6 +30,14 @@ class Match {
         // ctx.rotate(rad);
     }
 
+    rotate() {
+        let w = this.width;
+        let h = this.height;
+
+        this.width = h;
+        this.height = w;
+    }
+
     contains(point = { x, y }) {
         let contains =  point.x >= this.x &&
                         point.x <= this.x + this.width &&
@@ -81,8 +89,18 @@ class MatchesManager {
         match.selected = true;
     }
 
+    rotateSelectedMatch() {
+        if(!this.selectedMatch) return;
+
+        this._ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.selectedMatch.rotate();        
+        this.drawMatches();
+    }
+
     dragMatchAtPoint(point = {x, y}) {
         let match = this.getMatchContainsPoint(point);
+        if (!match) return;
+
         match.dragOffset = {
             x: point.x-match.x,
             y: point.y-match.y,
@@ -180,11 +198,7 @@ mouseMove = (e) => {
 keyDown = (e) => {
     switch(e.keyCode) {
         case 82:
-            context.rotate(4 * Math.PI / 180);
-            matchesManager.drawMatches();
-            if(matchesManager.selectedMatch) {
-                //matchesManager.selectMatch.x
-            }
+            matchesManager.rotateSelectedMatch();
             break;
         default:
             break;
