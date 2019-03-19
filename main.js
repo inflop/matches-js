@@ -2,6 +2,7 @@ const canvas = document.querySelector('canvas');
 const context = canvas.getContext('2d');
 const btnAddMatch = document.querySelector('#btnAddMatch');
 const btnClear = document.querySelector('#btnClear');
+const btnSave = document.querySelector('#btnSave');
 const numMatchesCount = document.querySelector('#numMatchesCount');
 
 canvas.width = 1000;
@@ -16,6 +17,7 @@ class Match {
         this.dragged = false;
         this.selected = false;
         this.dragOffset = { x: 0, y: 0};
+        this._rotated = false;
     }
 
     draw(ctx) {
@@ -24,13 +26,19 @@ class Match {
         ctx.lineWidth = 1;
         ctx.strokeStyle = "black";
         ctx.strokeRect(this.x, this.y, this.width, this.height);
-    
-        // var rad = 90 * Math.PI / 180;
-        // ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
-        // ctx.rotate(rad);
+
+        this._drawHead(ctx);
+    }
+
+    _drawHead(ctx) {
+        ctx.fillStyle = "brown";
+        let height = (this._rotated ? this.width : this.height) / 12;
+        let width = this._rotated ? this.height : this.width;
+        ctx.fillRect(this.x, this.y, width, height);
     }
 
     rotate() {
+        this._rotated = !this._rotated;
         let w = this.width;
         let h = this.height;
 
@@ -63,7 +71,7 @@ class MatchesManager {
         });
     }
 
-    addMatch(count) {
+    addMatches(count) {
         count = count || 1;
         const offset = 5;
         for (let i = 0; i < count; i++) {
@@ -73,8 +81,12 @@ class MatchesManager {
             if(!!lastMatch) {
                 newMatch = new Match(lastMatch.x+offset, lastMatch.y+offset);
             }
-            this._matches.push(newMatch);
+            this.addMatch(newMatch);
         }
+    }
+
+    addMatch(match) {
+        this._matches.push(match);
         this.drawMatches();
     }
 
@@ -93,7 +105,7 @@ class MatchesManager {
         if(!this.selectedMatch) return;
 
         this._ctx.clearRect(0, 0, canvas.width, canvas.height);
-        this.selectedMatch.rotate();        
+        this.selectedMatch.rotate();
         this.drawMatches();
     }
 
@@ -143,17 +155,51 @@ class MatchesManager {
         }
         return match;
     }
+
+    saveMatches() {
+        let items = this._matches.map(function(m) {
+            return {
+                x: m.x,
+                y: m.y,
+                w: m.width,
+                h: m.height
+            };
+        });
+        localStorage.setItem('matches', JSON.stringify(items));
+    }
+
+    loadMatches() {
+        let matchesJson = localStorage.getItem('matches');
+        if (!matchesJson) return;
+    
+        this.clearMatches();
+        let items = JSON.parse(matchesJson);
+        for(let item of items) {
+            let match = new Match(item.x, item.y);
+            match.width = item.w;
+            match.height = item.h;
+            this.addMatch(match);
+        }
+    }
 };
 
 const matchesManager = new MatchesManager(context);
 
 btnAddMatch.addEventListener('click', () => {
     const count = numMatchesCount.value || 1;
-    matchesManager.addMatch(count);
+    matchesManager.addMatches(count);
 });
 
 btnClear.addEventListener('click', () => {
     matchesManager.clearMatches();
+});
+
+btnSave.addEventListener('click', () => {
+    matchesManager.saveMatches();
+});
+
+btnLoad.addEventListener('click', () => {
+    matchesManager.loadMatches();
 });
 
 mouseUp = (e) => {
@@ -205,5 +251,11 @@ keyDown = (e) => {
     }
 };
 
+contextMenu = (e) => {
+    e.preventDefault();
+    matchesManager.rotateSelectedMatch();
+};
+
 canvas.addEventListener('mousedown', mouseDown, false);
+canvas.addEventListener('contextmenu', contextMenu, false);
 window.addEventListener("keydown", keyDown, false);
