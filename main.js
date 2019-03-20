@@ -15,7 +15,7 @@ class Match {
         this.width = 10;
         this.height = 150;
         this.dragged = false;
-        this.selected = false;
+        this.isSelected = false;
         this.dragOffset = { x: 0, y: 0};
         this._rotated = false;
     }
@@ -24,7 +24,7 @@ class Match {
         ctx.fillStyle = "yellow";
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.lineWidth = 1;
-        ctx.strokeStyle = "black";
+        ctx.strokeStyle = this.isSelected ? "Black" : "LightGrey";
         ctx.strokeRect(this.x, this.y, this.width, this.height);
 
         this._drawHead(ctx);
@@ -101,8 +101,9 @@ class MatchesManager {
 
     selectMatch(match) {
         if (!match) return;
-        this._matches.forEach(m => m.selected = false);
-        match.selected = true;
+        this._matches.forEach(m => m.isSelected = false);
+        match.isSelected = true;
+        this.drawMatches();
     }
 
     rotateSelectedMatch() {
@@ -141,7 +142,7 @@ class MatchesManager {
     }
 
     get selectedMatch() {
-        return this._matches.filter(m => m.selected)[0];
+        return this._matches.filter(m => m.isSelected)[0];
     }
 
     clearMatches() {
