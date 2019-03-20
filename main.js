@@ -32,8 +32,8 @@ class Match {
 
     _drawHead(ctx) {
         ctx.fillStyle = "brown";
-        let height = (this._rotated ? this.width : this.height) / 12;
-        let width = this._rotated ? this.height : this.width;
+        let height = this._rotated ? this.height : this.height / 12;
+        let width = this._rotated ? this.width / 12 : this.width;
         ctx.fillRect(this.x, this.y, width, height);
     }
 
@@ -44,6 +44,10 @@ class Match {
 
         this.width = h;
         this.height = w;
+    }
+
+    get isRotated() {
+        return this._rotated;
     }
 
     contains(point = { x, y }) {
@@ -161,8 +165,9 @@ class MatchesManager {
             return {
                 x: m.x,
                 y: m.y,
-                w: m.width,
-                h: m.height
+                w: m.isRotated ? m.height : m.width,
+                h: m.isRotated ? m.width : m.height,
+                r: m.isRotated
             };
         });
         localStorage.setItem('matches', JSON.stringify(items));
@@ -178,6 +183,9 @@ class MatchesManager {
             let match = new Match(item.x, item.y);
             match.width = item.w;
             match.height = item.h;
+            if (item.r) {
+                match.rotate();
+            }
             this.addMatch(match);
         }
     }
