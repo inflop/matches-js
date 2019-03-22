@@ -24,7 +24,7 @@ class Match {
         ctx.fillStyle = "yellow";
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.lineWidth = 1;
-        ctx.strokeStyle = this.isSelected ? "Black" : "LightGrey";
+        ctx.strokeStyle = this.isSelected ? "black" : "grey";
         ctx.strokeRect(this.x, this.y, this.width, this.height);
 
         this._drawHead(ctx);
@@ -111,6 +111,14 @@ class MatchesManager {
 
         this._ctx.clearRect(0, 0, canvas.width, canvas.height);
         this.selectedMatch.rotate();
+        this.drawMatches();
+    }
+
+    deleteSelectedMatch() {
+        if (!this.selectedMatch) return;
+
+        this._matches = this._matches.filter(m => !m.isSelected);
+        this._ctx.clearRect(0, 0, canvas.width, canvas.height);
         this.drawMatches();
     }
 
@@ -253,7 +261,13 @@ mouseMove = (e) => {
 keyDown = (e) => {
     switch(e.keyCode) {
         case 82:
-            matchesManager.rotateSelectedMatch();
+            matchesManager.rotateSelectedMatch();            
+            break;
+        case 46:
+            matchesManager.deleteSelectedMatch();
+            break;
+        case 45:
+            matchesManager.addMatches(1);
             break;
         default:
             break;
