@@ -214,14 +214,21 @@ class CanvasManager {
         this.canvas.width = 1000;
         this.canvas.height = 500;
 
-        this.canvas.addEventListener('mousedown', (e) => this.mouseDown(e), false);
-        this.canvas.addEventListener('contextmenu', (e) => this.contextMenu(e), false);
+        this._mouseDownRef = null;
+        this._contextmenuRef = null;
+        this._mouseMoveRef = null;
+        this._mouseUpRef = null;
+
+        let self = this;
+        this.canvas.addEventListener('mousedown', self._mouseDownRef = (e) => self.mouseDown(e), false);
+        this.canvas.addEventListener('contextmenu', self._contextmenuRef = (e) => self.contextMenu(e), false);
     }
 
     mouseUp(e) {
-        this.canvas.addEventListener("mousedown", (e) => this.mouseDown(e), false);
-        this.canvas.removeEventListener("mouseup", this.mouseUp, false);
-        this.canvas.removeEventListener("mousemove", this.mouseMove, false);
+        let self = this;
+        this.canvas.addEventListener('mousedown', self._mouseDownRef = (e) => self.mouseDown(e), false);
+        this.canvas.removeEventListener("mouseup", self._mouseUpRef, false);
+        this.canvas.removeEventListener("mousemove", self._mouseMoveRef, false);
 
         if (!this.matchesManager.draggedMatch) return;
         this.matchesManager.dropMatch();
@@ -237,9 +244,10 @@ class CanvasManager {
         this.matchesManager.selectMatchAtPoint(point);
         this.matchesManager.dragMatchAtPoint(point);
 
-        this.canvas.addEventListener('mousemove', (e) => this.mouseMove(e), false);
-        this.canvas.addEventListener("mouseup", (e) => this.mouseUp(e), false);
-        this.canvas.removeEventListener('mousedown', this.mouseDown, false);
+        let self = this;
+        this.canvas.addEventListener('mousemove', self._mouseMoveRef = (e) => self.mouseMove(e), false);
+        this.canvas.addEventListener("mouseup", self._mouseUpRef = (e) => self.mouseUp(e), false);
+        this.canvas.removeEventListener('mousedown', self._mouseDownRef, false);
     }
 
     mouseMove(e) {
