@@ -5,9 +5,6 @@ const btnClear = document.querySelector('#btnClear');
 const btnSave = document.querySelector('#btnSave');
 const numMatchesCount = document.querySelector('#numMatchesCount');
 
-canvas.width = 1000;
-canvas.height = 500;
-
 class Match {
     constructor(x, y) {
         this.x = x || canvas.width / 2;
@@ -62,7 +59,7 @@ class Match {
 class MatchesManager {
     constructor(ctx) {
         this._matches = [];
-        this._ctx = ctx;
+        this.context = ctx;
     }
 
     get matches() {
@@ -71,7 +68,7 @@ class MatchesManager {
 
     drawMatches() {
         this._matches.forEach(match => {
-            match.draw(this._ctx);
+            match.draw(this.context);
         });
     }
 
@@ -109,7 +106,7 @@ class MatchesManager {
     rotateSelectedMatch() {
         if(!this.selectedMatch) return;
 
-        this._ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.context.clearRect(0, 0, canvas.width, canvas.height);
         this.selectedMatch.rotate();
         this.drawMatches();
     }
@@ -118,7 +115,7 @@ class MatchesManager {
         if (!this.selectedMatch) return;
 
         this._matches = this._matches.filter(m => !m.isSelected);
-        this._ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.context.clearRect(0, 0, canvas.width, canvas.height);
         this.drawMatches();
     }
 
@@ -139,10 +136,19 @@ class MatchesManager {
     }
 
     dropMatch() {
-        let match = this.draggedMatch;
-        if (!match) return;
-        match.dragOffset = { x: 0, y: 0 };
-        match.dragged = false;
+        if (!this.draggedMatch) return;
+
+        this.draggedMatch.dragOffset = { x: 0, y: 0 };
+        this.draggedMatch.dragged = false;
+    }
+
+    moveDraggedMatchToPoint(point = { x, y }) {
+        if (!this.draggedMatch) return;
+
+        this.draggedMatch.x = point.x;
+        this.draggedMatch.y = point.y;
+        this.context.clearRect(0, 0, canvas.width, canvas.height);
+        this.drawMatches();
     }
 
     get draggedMatch() {
@@ -155,7 +161,7 @@ class MatchesManager {
 
     clearMatches() {
         this._matches = [];
-        this._ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.context.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     getMatchContainsPoint(point = {x, y}) {
@@ -200,7 +206,62 @@ class MatchesManager {
     }
 };
 
+class CanvasManager {
+    constructor(matchesManager) {
+        this.matchesManager = matchesManager;
+        this.canvas = this.matchesManager.context.canvas;
+
+        this.canvas.width = 1000;
+        this.canvas.height = 500;
+
+        this.canvas.addEventListener('mousedown', (e) => this.mouseDown(e), false);
+        this.canvas.addEventListener('contextmenu', (e) => this.contextMenu(e), false);
+    }
+
+    mouseUp(e) {
+        this.canvas.addEventListener("mousedown", (e) => this.mouseDown(e), false);
+        this.canvas.removeEventListener("mouseup", this.mouseUp, false);
+        this.canvas.removeEventListener("mousemove", this.mouseMove, false);
+
+        if (!this.matchesManager.draggedMatch) return;
+        this.matchesManager.dropMatch();
+    }
+
+    mouseDown(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const point = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+
+        this.matchesManager.selectMatchAtPoint(point);
+        this.matchesManager.dragMatchAtPoint(point);
+
+        this.canvas.addEventListener('mousemove', (e) => this.mouseMove(e), false);
+        this.canvas.addEventListener("mouseup", (e) => this.mouseUp(e), false);
+        this.canvas.removeEventListener('mousedown', this.mouseDown, false);
+    }
+
+    mouseMove(e) {
+        if (!this.matchesManager.draggedMatch) return;
+
+        const rect = this.canvas.getBoundingClientRect();
+        const point = {
+            x: e.clientX - rect.left - this.matchesManager.draggedMatch.dragOffset.x,
+            y: e.clientY - rect.top - this.matchesManager.draggedMatch.dragOffset.y
+        };
+
+        this.matchesManager.moveDraggedMatchToPoint(point);
+    }
+
+    contextMenu(e) {
+        e.preventDefault();
+        this.matchesManager.rotateSelectedMatch();
+    }
+}
+
 const matchesManager = new MatchesManager(context);
+const canvasManager = new CanvasManager(matchesManager);
 
 btnAddMatch.addEventListener('click', () => {
     const count = numMatchesCount.value || 1;
@@ -220,42 +281,15 @@ btnLoad.addEventListener('click', () => {
 });
 
 mouseUp = (e) => {
-	canvas.addEventListener("mousedown", mouseDown, false);
-    canvas.removeEventListener("mouseup", mouseUp, false);
-    canvas.removeEventListener("mousemove", mouseMove, false);
-
-    if(!matchesManager.draggedMatch) return;
-    matchesManager.dropMatch();
+    canvasManager.mouseUp(e);
 };
 
 mouseDown = (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const point = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-    };
-
-    matchesManager.selectMatchAtPoint(point);
-    matchesManager.dragMatchAtPoint(point);    
-
-    canvas.addEventListener('mousemove', mouseMove, false);
-    canvas.addEventListener("mouseup", mouseUp, false);
-    canvas.removeEventListener('mousedown', mouseDown, false);
+    canvasManager.mouseDown(e);
 };
 
 mouseMove = (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const point = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-    };
-
-    if(!matchesManager.draggedMatch) return;
-
-    matchesManager.draggedMatch.x = point.x-matchesManager.draggedMatch.dragOffset.x;
-    matchesManager.draggedMatch.y = point.y-matchesManager.draggedMatch.dragOffset.y;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    matchesManager.drawMatches();
+    canvasManager.mouseMove(e);
 };
 
 keyDown = (e) => {
@@ -275,10 +309,7 @@ keyDown = (e) => {
 };
 
 contextMenu = (e) => {
-    e.preventDefault();
-    matchesManager.rotateSelectedMatch();
+    canvasManager.contextMenu(e);
 };
 
-canvas.addEventListener('mousedown', mouseDown, false);
-canvas.addEventListener('contextmenu', contextMenu, false);
 window.addEventListener("keydown", keyDown, false);
