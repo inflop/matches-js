@@ -211,8 +211,8 @@ class CanvasManager {
         this.matchesManager = matchesManager;
         this.canvas = this.matchesManager.context.canvas;
 
-        this.canvas.width = 1000;
-        this.canvas.height = 500;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
 
         this._mouseDownRef = null;
         this._contextmenuRef = null;
