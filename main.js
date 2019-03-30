@@ -211,8 +211,8 @@ class CanvasManager {
         this.matchesManager = matchesManager;
         this.canvas = this.matchesManager.context.canvas;
 
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        this.canvas.width = window.innerWidth-50;
+        this.canvas.height = window.innerHeight-50;
 
         this._mouseDownRef = null;
         this._contextmenuRef = null;
@@ -222,6 +222,10 @@ class CanvasManager {
         let self = this;
         this.canvas.addEventListener('mousedown', self._mouseDownRef = (e) => self.mouseDown(e), false);
         this.canvas.addEventListener('contextmenu', self._contextmenuRef = (e) => self.contextMenu(e), false);
+    }
+
+    refresh() {
+        this.matchesManager.drawMatches();
     }
 
     mouseUp(e) {

@@ -9,4 +9,16 @@ canvas {
     border: 2px solid green;
     background: green;
 }
+
+.row {
+    display: flex;
+}
+
+.center {
+    justify-content: center;
+}
+
+.mb {
+    margin-bottom: 5px;
+}
    

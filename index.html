@@ -6,19 +6,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>matches-js</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"> -->
     <link rel="stylesheet" type="text/css" media="screen" href="main.css">
 </head>
 
 <body>
-    <div>
-        <input type="number" id="numMatchesCount" max="50" min="1" value="1">
-        <button id="btnAddMatch" type="button">Add match</button>
-        <button id="btnClear" type="button">Clear</button>
-        <button id="btnSave" type="button">Save</button>
-        <button id="btnLoad" type="button">Load</button>
+    <div class="row center mb">
+        <input type="number" id="numMatchesCount" max="50" min="1" value="1" class="form-input">
+        <button id="btnAddMatch" type="button" class="btn btn-success">Add match</button>
+        <button id="btnClear" type="button" class="btn btn-success">Clear</button>
+        <button id="btnSave" type="button" class="btn btn-success">Save</button>
+        <button id="btnLoad" type="button" class="btn btn-success">Load</button>
     </div>
-    <canvas></canvas>
+    <div class="row center">
+        <canvas></canvas>
+    </div>
 </body>
 <script src="main.js"></script>
 
